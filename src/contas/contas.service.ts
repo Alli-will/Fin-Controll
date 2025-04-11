@@ -52,6 +52,11 @@ constructor(private prisma: PrismaService) {}
             gte: data
           },
         }),
+        ...(valor && {
+          valor: {
+            gte: valor
+          },
+        })
 
       },
       orderBy: [
