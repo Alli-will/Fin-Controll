@@ -1,20 +1,21 @@
 import { IsDate, IsNumber, IsPositive, IsString } from "class-validator";
+import { Type } from "class-transformer";
 
 export class CreateContaDto {
-    @IsString()
+    @IsString({ message: 'descricao deve ser uma string'})
     descricao: String;
     
-    @IsString()
+    @IsString({ message: 'categoria deve ser uma string'})
     categoria: String;
     
-    @IsString()
+    @IsString({ message: 'forma de pagamento deve ser uma string'})
     formapgto: String;
     
-    @IsDate()
-    data: Date;
     
-    @IsNumber()
-    @IsPositive()
+    @IsNumber({},{ message: 'valor deve ser um número'})
+    @IsPositive({ message: 'valor deve ser positivo'})
     valor: number;
 }
+
+
 

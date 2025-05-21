@@ -1,4 +1,4 @@
-import { Controller, Headers, Get, Post, Body, Patch, Param, Delete, UnauthorizedException, Query } from '@nestjs/common';
+import { Controller, Headers, Get, Post, Body, Patch, Param, Delete, UnauthorizedException, Query, BadRequestException } from '@nestjs/common';
 import { ContasService } from './contas.service';
 import { CreateContaDto } from './dto/create-conta.dto';
 import { UpdateContaDto } from './dto/update-conta.dto';
@@ -11,49 +11,97 @@ export class ContasController {
     private readonly authService: AuthService
   ) {}
 
-  @Post()
-  create(@Body() createContaDto: CreateContaDto) {
+  private validateToken(token: string): void {
+    if (!token) {
+      throw new UnauthorizedException('Token não enviado');
+    }
+    this.authService.validateToken(token);
+  }
 
+  @Post()
+  create(
+    @Body() createContaDto: CreateContaDto,
+    @Headers('x-api-token') token: string
+  ) {
+    this.validateToken(token);
     return this.contasService.create(createContaDto);
   }
 
   @Get()
   findAll(
-    @Headers('x-api-token') token: String,
-    @Query('nome') nome?: string,
+    @Headers('x-api-token') token: string,
+    @Query('id') id?: string,
     @Query('data') data?: string,
     @Query('valor') valor?: string,
     @Query('descricao') descricao?: string,
     @Query('categoria') categoria?: string,
     @Query('formapgto') formapgto?: string,
-) {
-    if(!token) 
-      throw new  
-    UnauthorizedException('Token não Enviado');
-
-    this.authService.validateToken(token);
+  ) {
+    this.validateToken(token);
     
+    
+    if (id && !/^\d+$/.test(id)) {
+      throw new BadRequestException('ID deve ser um número inteiro válido');
+    }
+    
+    if (valor && isNaN(parseFloat(valor))) {
+      throw new BadRequestException('Valor deve ser um número válido');
+    }
+
+    if (data && isNaN(new Date(data).getTime())) {
+      throw new BadRequestException('Data inválida. Use o formato YYYY-MM-DD');
+    }
+
     return this.contasService.findAll(
-      data ? new Date(data) : undefined,
-      valor ? parseFloat(valor) : undefined,
+      id,
+      data,
+      valor,
       descricao,
       categoria,
-      formapgto,
+      formapgto
     );
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.contasService.findOne(+id);
+  findOne(
+    @Param('id') id: string,
+    @Headers('x-api-token') token: string
+  ) {
+    this.validateToken(token);
+
+    if (!/^\d+$/.test(id)) {
+      throw new BadRequestException('ID deve ser um número inteiro válido');
+    }
+
+    return this.contasService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateContaDto: UpdateContaDto) {
-    return this.contasService.update(+id, updateContaDto);
+  update(
+    @Param('id') id: string,
+    @Body() updateContaDto: UpdateContaDto,
+    @Headers('x-api-token') token: string
+  ) {
+    this.validateToken(token);
+
+    if (!/^\d+$/.test(id)) {
+      throw new BadRequestException('ID deve ser um número inteiro válido');
+    }
+
+    return this.contasService.update(id, updateContaDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.contasService.remove(+id);
+  remove(
+    @Param('id') id: string,
+    @Headers('x-api-token') token: string
+  ) {
+    this.validateToken(token);
+
+    if (!/^\d+$/.test(id)) {
+      throw new BadRequestException('ID deve ser um número inteiro válido');
+    }
+
+    return this.contasService.remove(id);
   }
 }
