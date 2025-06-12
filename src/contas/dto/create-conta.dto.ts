@@ -3,13 +3,13 @@ import { Type } from "class-transformer";
 
 export class CreateContaDto {
     @IsString({ message: 'descricao deve ser uma string'})
-    descricao: String;
+    descricao: string;
     
     @IsString({ message: 'categoria deve ser uma string'})
-    categoria: String;
+    categoria: string;
     
     @IsString({ message: 'forma de pagamento deve ser uma string'})
-    formapgto: String;
+    formapgto: string;
     
     
     @IsNumber({},{ message: 'valor deve ser um número'})
